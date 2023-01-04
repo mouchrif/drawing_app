@@ -1,30 +1,29 @@
-import 'package:drawing_app/app/data/models/drawing_line.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
 
-class Sketcher extends CustomPainter {
-  final List<DrawnLine?> lines;
-  Sketcher({required this.lines});
+// Project imports:
+import 'package:drawing_app/app/data/models/drawing_line.dart';
+
+class SketcherLines extends CustomPainter {
+  SketcherLines({required this.allLines});
+
+  final List<DrawnLine> allLines;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.red
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0;
-    if (lines.isEmpty) return;
-    for (var i = 0; i < lines.length; i++) {
-      if (lines[i] == null) continue;
-      for (var j = 0; j < lines[i]!.points.length - 1; j++) {
-        if (lines[i]?.points[j] != null && lines[i]?.points[j + 1] != null) {
-          paint.color = lines[i]!.lineColor;
-          paint.strokeCap = StrokeCap.round;
-          paint.strokeWidth = lines[i]!.lineStroke;
-          canvas.drawLine(lines[i]!.points[j], lines[i]!.points[j + 1], paint);
+    for (int i = 0; i < allLines.length; i++) {
+      for (int j = 0; j < allLines[i].points.length - 1; j++) {
+        if (allLines[i].points[j] != null && allLines[i].points[j + 1] != null) {
+          final paint = Paint()
+            ..color = allLines[i].lineColor
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = allLines[i].lineStroke;
+          canvas.drawLine(allLines[i].points[j], allLines[i].points[j + 1], paint);
         }
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(SketcherLines oldDelegate) => true;
 }

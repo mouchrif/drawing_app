@@ -1,6 +1,8 @@
+// Package imports:
 import 'package:get/get.dart';
 
-import '../modules/drawing/views/drawing_view.dart';
+// Project imports:
+import 'package:drawing_app/app/modules/drawing/views/drawing_view.dart';
 import '../modules/home/views/home_view.dart';
 
 part 'app_routes.dart';
