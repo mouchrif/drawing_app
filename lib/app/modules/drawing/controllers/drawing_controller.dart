@@ -4,6 +4,9 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 // Flutter imports:
+import 'package:drawing_app/app/core/error/errors.dart';
+import 'package:drawing_app/app/core/loading/loading_state.dart';
+import 'package:drawing_app/app/widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -24,6 +27,9 @@ class DrawingController extends GetxController {
   final currentLine = DrawnLine(lineColor: Colors.black, lineStroke: 5.0, points: []).obs;
   final linesStream = StreamController<DrawnLine>();
 
+  final state = Rx<LoadingState>(const LoadingState.empty());
+  StreamSubscription? stateSub;
+
   @override
   void onInit() {
     super.onInit();
@@ -33,11 +39,13 @@ class DrawingController extends GetxController {
   void onReady() {
     super.onReady();
     linesStream.stream.listen((line) => _addLine(line));
+    stateSub = AppSnackBar(loadingState: state, position: SnackPosition.BOTTOM).initListener();
   }
 
   @override
   void onClose() {
     linesStream.close();
+    stateSub?.cancel();
     super.onClose();
   }
 
@@ -73,15 +81,20 @@ class DrawingController extends GetxController {
   }
 
   Future<void> saveImage() async {
-    final permissionStatus = await _getPermissionStorageStatus();
-    if (permissionStatus) {
-      await _saveImageOnPhoneGallery();
-    } else {
-      final isGaranted = await _requestPermissionExternalStorage();
-      if (isGaranted) {
+    state.value = const LoadingState.loading();
+    if(lines.isEmpty) {
+      state.value = const LoadingState.error(message: "No drawing added yet!", type: MessageType.danger);
+    }else{
+      final permissionStatus = await _getPermissionStorageStatus();
+      if (permissionStatus) {
         await _saveImageOnPhoneGallery();
       } else {
-        print("ACCESS DENIED");
+        final isGaranted = await _requestPermissionExternalStorage();
+        if (isGaranted) {
+          await _saveImageOnPhoneGallery();
+        } else {
+          state.value = const LoadingState.error(message: "ACCESS DENIED", type: MessageType.danger);
+        }
       }
     }
   }
@@ -99,9 +112,11 @@ class DrawingController extends GetxController {
         name: '${DateTime.now().toIso8601String()}.png',
         isReturnImagePathOfIOS: true,
       );
+      state.value = const LoadingState.loaded(message: "Image has been saved successfuly", type: MessageType.success);
       print("SAVED: $saved");
     } catch (error) {
       print(error);
+      state.value = const LoadingState.error(message: "Image cannot be saved, try again", type: MessageType.danger);
     }
   }
 
