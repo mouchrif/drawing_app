@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 // Flutter imports:
+import 'package:drawing_app/app/core/constants/messages_strings.dart';
 import 'package:drawing_app/app/core/error/errors.dart';
 import 'package:drawing_app/app/core/loading/loading_state.dart';
 import 'package:drawing_app/app/widgets/app_snackbar.dart';
@@ -83,7 +84,7 @@ class DrawingController extends GetxController {
   Future<void> saveImage() async {
     state.value = const LoadingState.loading();
     if(lines.isEmpty) {
-      state.value = const LoadingState.error(message: "No drawing added yet!", type: MessageType.danger);
+      state.value = const LoadingState.error(message: MessagesStrings.drawingEmpty, type: MessageType.danger);
     }else{
       final permissionStatus = await _getPermissionStorageStatus();
       if (permissionStatus) {
@@ -93,7 +94,7 @@ class DrawingController extends GetxController {
         if (isGaranted) {
           await _saveImageOnPhoneGallery();
         } else {
-          state.value = const LoadingState.error(message: "ACCESS DENIED", type: MessageType.danger);
+          state.value = const LoadingState.error(message: MessagesStrings.accessDenied, type: MessageType.danger);
         }
       }
     }
@@ -112,11 +113,11 @@ class DrawingController extends GetxController {
         name: '${DateTime.now().toIso8601String()}.png',
         isReturnImagePathOfIOS: true,
       );
-      state.value = const LoadingState.loaded(message: "Image has been saved successfuly", type: MessageType.success);
+      state.value = const LoadingState.loaded(message: MessagesStrings.imageSavedSuccessfuly, type: MessageType.success);
       print("SAVED: $saved");
     } catch (error) {
       print(error);
-      state.value = const LoadingState.error(message: "Image cannot be saved, try again", type: MessageType.danger);
+      state.value = const LoadingState.error(message: MessagesStrings.imageCannotBeSaved, type: MessageType.danger);
     }
   }
 
